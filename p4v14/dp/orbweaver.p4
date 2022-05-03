@@ -144,8 +144,10 @@ control ingress {
   if(ow_md.type == USER_TYPE) {
     // Arbitrary user packet forwarding logic
     apply(ti_forward_user);
+  } else if(ow_md.type == LOCAL_IDLE_TYPE) {
+    // Arbitrary seed packet processing
   } 
-  
+   
   apply(ti_set_mask);
   apply(ti_filter);
   
@@ -159,4 +161,7 @@ control ingress {
 
 control egress {
   ce_accounting_();
+  if (ow_md.type == LOCAL_IDLE_TYPE) {
+    // Arbitrary IDLE packet processing
+  }
 }

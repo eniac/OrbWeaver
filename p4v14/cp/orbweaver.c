@@ -182,18 +182,6 @@ void set_egress_q_prio(int pipeid){
   }
 }
 
-char *read_key(FILE *file, char const *targetkey) { 
-    char key[128];
-    char val[128];
-    while (fscanf(file, "%127[^=]=%127[^\n]%*c", key, val) == 2) {
-        if (0 == strcmp(key, targetkey)) {
-            return strdup(val);
-	}
-    }
-    rewind(file);  // O.w. the args needs to be sorted
-    return NULL;
-}
-
 int main(int argc, char **argv) {
 
   int opt;
