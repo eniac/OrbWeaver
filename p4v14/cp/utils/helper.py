@@ -97,3 +97,13 @@ def mcbitmap_to_lags(mc_bitmap):
         devport_list.append(i * 8 + j)
   return lag_list
 
+import os
+def create_dir(name):
+  try:
+    os.makedirs(name)
+  except OSError as e:
+    if e.errno == errno.EEXIST:
+      pass
+    else:
+      raise
+

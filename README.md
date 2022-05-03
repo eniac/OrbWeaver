@@ -5,10 +5,40 @@
 OrbWeaver is a lightweight mechanism to provide weaved stream abstraction, enabling opportunistic exploitation of IDLE cycles for in-network communication.
 
 The repo contains an example OrbWeaver mechanism inline with a minimal p4 user program for a tofino pipeline with fully connected 100G quads, so that one could adapt the scripts based on the custom wiring, number of utilized pipelines and ports, and the target data plane application.
-Metadata, actions, and tables with `*_` suffix are for debugging purposes only.
+Metadata, actions, tables, and control blocks with `*_` suffix are for debugging purposes only.
 
 The prototype was developed on testbed with a pair of Wedge100BF-32X Tofino switch and `bf-sde-9.2.0`.
-The repo provides the implementation in both p4v14 and p4v16.
+
+The repo provides the corresponding implementation in both p4v14 and p4v16.
+
+### How to Run
+
+**p4v14**
+
+1. Compile the example P4 program (or OrbWeaver with custom target data plane app):
+
+```console
+leoyu@localhost:~/OrbWeaver/p4v14/dp$ sudo ./compile.sh orbweaver.p4
+```
+
+2. Launch the switch daemon process to configure the seed generation, queues and buffers:
+
+```console
+# Usage: ./launch.sh [-t ethertype_seed] [-g gap_seed] [-p prot_seed] <p4prog_name>
+leoyu@localhost:~/OrbWeaver/p4v14/cp$ sudo ./launch.sh -t 0x1234 -g 59 -p 0x11 orbweaver
+```
+
+3. Enable ports, create multicast groups, and configure data plane states: `python orbweaver.py`
+
+4. Sanity check: `python orbweaver.py debug`. By default, this records 0.1s worth of example debugging stats.
+    * Accounting for packet counts per weaved stream at both ingress (upstream) and egress (downstream)
+    * Histogram of seed stream gap [ns] for a pipeline
+    * Histogram of multicast groups usage
+    * Histogram of weaved stream gap [ns] for an egress port
+    * Ring buffer of gaps [ns] for a substream of an egressing weaved stream
+
+
+**p4v16[TBA]**
 
 ### Further Questions
 

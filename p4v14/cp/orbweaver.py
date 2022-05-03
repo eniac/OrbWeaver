@@ -185,15 +185,15 @@ class Controller:
     self.transport.close()
 
 
-def debug(master=None):
+def debug(master=None, args=None):
   if master is None: 
     print("PID: " + str(os.getpid()))
     master = Controller("orbweaver")
 
-  print("--- Trigger debug modules to record for 0.1s ---")
+  print("--- Trigger debug modules to record for {} ---".format(args.time))
   master.set_default_rule_action_args("ti_set_record_", "ai_set_record_", [1])
   master.set_default_rule_action_args("te_set_record_", "ae_set_record_", [1])
-  time.sleep(0.1)
+  time.sleep(args.time)
   master.set_default_rule_action_args("ti_set_record_", "ai_set_record_", [0])
   master.set_default_rule_action_args("te_set_record_", "ae_set_record_", [0])
 
@@ -222,10 +222,6 @@ def debug(master=None):
 
   for appid in [1, 2]:
     master.print_pktgen_counter_for_app(appid)
-
-  # with open(sys.argv[1], "w") as write_file:                                                                                                              
-  #     json.dump(index2count_dict, write_file)
-  # num_right_shift = 0
 
   print("pipe0 ri_gap_hist_ (strictly 0 otherwise):")
   print("# gap, count")
@@ -263,6 +259,17 @@ def debug(master=None):
         print("{0}[ns], {1}, {2}%".format(index, gap2count[index], 1.0*gap2count[index]/sum_count*100.0))
     print("Mean gap: {0}".format(1.0*sum_gap/sum_count))
   #interval_ns = index*2**num_right_shift;
+
+  seq2gap = {}
+  for seq in range(131072):
+    gap = long(master.read_reg_element_for_pipe("re_gap_rb_", seq, pipeid=0))
+    if gap != 0:
+      seq2gap[seq] = gap 
+  
+  create_dir(args.dir)
+  with open(args.dir+"/gap_rb_pipe0.json", "w") as f:
+    json.dump(seq2gap, f)
+
   master.cleanup()
 
 
@@ -396,15 +403,20 @@ def config(w_debug):
 if __name__ == '__main__':
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('-m', '--mode', type=str, required=False, default="config", choices=["config", "debug", "config+debug"], help="Run in mode [config|debug|config+debug]")
-  args = parser.parse_args()
+  subcmds = parser.add_subparsers(dest="cmd")
 
-  if args.mode == "debug":
-    debug()
-  elif args.mode == "config":
+  cmd_config = subcmds.add_parser("config")
+
+  cmd_debug = subcmds.add_parser("debug")
+  cmd_debug.add_argument("-t", "--time", type=float, required=False, default=0.1, help="Number of seconds to record the debugging stats")
+  cmd_debug.add_argument("-d", "--dir", type=str, required=False, default="logs", help="Name of the directory to hold the debugging stats")
+
+  args = parser.parse_args(['config'] if len(sys.argv)==1 else None)
+
+  if args.cmd == "config":
     config(False)
-  elif args.mode == "config+debug":
-    config(True)
+  elif args.cmd == "debug":
+    debug(None, args)
   else:
     print("ERR")
 
