@@ -104,6 +104,11 @@ class Controller:
     action_spec = eval("self.dp_ttypes."+self.prog_name+"_"+action_name+"_action_spec_t("+action_arg+")")
     eval("self.client."+tbl_name+"_table_add_with_"+action_name+"(self.conn_hdl, self.dev_tgt, match_spec, priority, action_spec)")
 
+  def add_rule_ternary_read_action_arg(self, tbl_name, action_name, match_arg_ternary, match_arg_ternary_mask, priority, action_arg):
+    match_spec = eval("self.dp_ttypes."+self.prog_name+"_"+tbl_name+"_match_spec_t("+match_arg_ternary+","+match_arg_ternary_mask+")")
+    action_spec = eval("self.dp_ttypes."+self.prog_name+"_"+action_name+"_action_spec_t("+action_arg+")")
+    eval("self.client."+tbl_name+"_table_add_with_"+action_name+"(self.conn_hdl, self.dev_tgt, match_spec, priority, action_spec)")
+
   def add_rule_exact_read_ternary_read(self, tbl_name, action_name, match_arg_exact, match_arg_ternary, match_arg_ternary_mask, priority):
     match_spec = eval("self.dp_ttypes."+self.prog_name+"_"+tbl_name+"_match_spec_t("+match_arg_exact+","+match_arg_ternary+","+match_arg_ternary_mask+")")
     eval("self.client."+tbl_name+"_table_add_with_"+action_name+"(self.conn_hdl, self.dev_tgt, match_spec, priority)")
@@ -121,30 +126,6 @@ class Controller:
     match_spec = eval(match_spec_stmt)
     action_spec = eval("self.dp_ttypes."+self.prog_name+"_"+action_name+"_action_spec_t("+action_arg+")")
     eval("self.client."+tbl_name+"_table_add_with_"+action_name+"(self.conn_hdl, self.dev_tgt, match_spec, action_spec)")
-
-  def connect(self):
-    match_spec = self.dp_ttypes.prog_ti_ipv4_forwarding_match_spec_t(
-      ipv4Addr_to_i32("10.1.1.5"), # dest first
-      ipv4Addr_to_i32("255.255.255.255"),
-      ipv4Addr_to_i32("10.1.1.3"),
-      ipv4Addr_to_i32("0.0.0.0"))
-    action_spec = self.dp_ttypes.prog_ai_set_egr_port_action_spec_t(163)
-    priority = hex_to_i32(0x2)
-    self.client.ti_ipv4_forwarding_table_add_with_ai_set_egr_port(
-      self.conn_hdl, self.dev_tgt, match_spec,
-      priority, action_spec)
-
-    match_spec = self.dp_ttypes.prog_ti_ipv4_forwarding_match_spec_t(
-      ipv4Addr_to_i32("10.1.1.3"),
-      ipv4Addr_to_i32("255.255.255.255"),
-      ipv4Addr_to_i32("10.1.1.5"),
-      ipv4Addr_to_i32("0.0.0.0"))
-    # action_spec = self.dp_ttypes.prog_ai_set_egr_port_action_spec_t(hex_to_i16(163)) # 163 0xA3
-    action_spec = self.dp_ttypes.prog_ai_set_egr_port_action_spec_t(155)
-    priority = hex_to_i32(0x2)
-    self.client.ti_ipv4_forwarding_table_add_with_ai_set_egr_port(
-      self.conn_hdl, self.dev_tgt, match_spec,
-      priority, action_spec)
 
   def print_pktgen_counter_for_app(self, appid):
     print("App "+str(appid)+":"+str(self.conn.pktgen_get_pkt_counter(self.conn_hdl, self.dev_tgt, appid)))
@@ -283,9 +264,9 @@ def config(w_debug):
 
   data = {}
   with open('utils/servers.json', 'r') as f:
-    data=json.loads(f.read())
+    servers_json=json.loads(f.read())
   server_ports = []
-  for val in data.values():
+  for val in servers_json.values():
     server_ports.append(val['port_id'])
 
   print("--- Set up ports (physically occupied for successful enabling) ---")
@@ -315,6 +296,15 @@ def config(w_debug):
     master.create_mc_grp(mc_grp_ids[i], mc_pipe0_combinations[i])
 
   print("--- Configure DP states ---")
+  for server in servers_json.values():
+    master.add_rule_ternary_read_action_arg(tbl_name="ti_forward_user",
+                                action_name='ai_forward_user',
+				match_arg_ternary=str(ipv4Addr_to_i32(server['ip_addr'])),
+				match_arg_ternary_mask=str(ipv4Addr_to_i32("255.255.255.255")),
+			                  priority=0x2,
+					  action_arg=str(server['port_id'])
+                                        )
+
   master.add_rule_exact_reads_action_arg(tbl_name="ti_set_pkt_type",
                                         action_name="ai_set_pkt_type",
 					match_args=["0x1234", "68"],
