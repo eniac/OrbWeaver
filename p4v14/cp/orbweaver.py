@@ -309,6 +309,11 @@ def config(w_debug):
                                         action_name="ai_set_pkt_type",
 					match_args=["0x1234", "68"],
 					action_arg="0x1")
+  for port in mc_pipe0_ports:
+    master.add_rule_exact_reads_action_arg(tbl_name="ti_set_pkt_type",
+                                        action_name="ai_set_pkt_type",
+					match_args=["0x1234", str(port)],
+					action_arg="0x2")
 
   for index, port in enumerate(mc_pipe0_ports):
     master.add_rule_exact_reads_action_arg(tbl_name="ti_set_mask",

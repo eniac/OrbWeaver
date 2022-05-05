@@ -64,6 +64,11 @@ table ti_forward_user {
   default_action: ai_forward_user(0x4);
 }
 
+table ti_process_upstream_idle {
+  actions { ai_drop; }
+  default_action: ai_drop();
+}
+
 action ai_set_mask(mask) {
   modify_field(ow_md.mask, mask);
 }
@@ -113,10 +118,8 @@ table ti_set_pkt_type {
   }
   actions { 
     ai_set_pkt_type;
-    ai_nop;
-    ai_drop;
   }
-  default_action: ai_nop();
+  default_action: ai_set_pkt_type(USER_TYPE);
   size: 256;
 }
 
@@ -144,6 +147,9 @@ control ingress {
   if(ow_md.type == USER_TYPE) {
     // Arbitrary user packet forwarding logic
     apply(ti_forward_user);
+  } else if(ow_md.type == EXTERNAL_IDLE_TYPE) {
+    // Arbitrary processing of IDLE packets from upstream weaved stream
+    apply(ti_process_upstream_idle);
   } else if(ow_md.type == LOCAL_IDLE_TYPE) {
     // Arbitrary seed packet processing
   } 
