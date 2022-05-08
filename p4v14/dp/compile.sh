@@ -2,11 +2,15 @@
 
 set -ex
 
-export SDE="/home/leoyu/bf-sde-9.2.0"
-export P4C="/home/leoyu/bf-sde-9.2.0/install/bin/bf-p4c"
+if [ -z $SDE ]; then
+  echo "ERROR: SDE env var not set"
+  exit 1
+fi
+
+export P4C=$SDE"install/bin/bf-p4c"
 export CURR=$(pwd)
-export SDE_BUILD=$SDE"/build"
-export SDE_INSTALL=$SDE"/install"
+export SDE_BUILD=$SDE"build"
+export SDE_INSTALL=$SDE"install"
 export PATH=$SDE_INSTALL/bin:$PATH
 
 prog_name=$(basename $1 .p4)

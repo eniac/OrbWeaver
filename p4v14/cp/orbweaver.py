@@ -18,8 +18,15 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.protocol import TMultiplexedProtocol
 
-sys.path.append("/home/leoyu/bf-sde-9.2.0/install/lib/python2.7/site-packages/tofino/")
-sys.path.append("/home/leoyu/bf-sde-9.2.0/install/lib/python2.7/site-packages/")
+SDE=os.environ['SDE']
+if SDE is None:
+  print("ERR: missing SDE env var")
+  exit()
+else:
+  print("SDE: {}".format(SDE))
+
+sys.path.append(SDE+"install/lib/python2.7/site-packages/tofino/")
+sys.path.append(SDE+"install/lib/python2.7/site-packages/")
 
 import pal_rpc.pal as pal_i
 from pal_rpc.ttypes import *
@@ -57,7 +64,7 @@ class Controller:
     self.mirror_protocol = TMultiplexedProtocol.TMultiplexedProtocol(self.bprotocol, "mirror")
     self.mirror = mirror_i.Client(self.mirror_protocol)
 
-    pd_path = "/home/leoyu/bf-sde-9.2.0/install/lib/python2.7/site-packages/tofinopd/"+self.prog_name
+    pd_path = SDE+"install/lib/python2.7/site-packages/tofinopd/"+self.prog_name
     sys.path.insert(0, pd_path)
     self.dp_client_module = importlib.import_module("p4_pd_rpc."+self.prog_name)
 #    print(dir(self.dp_client_module))

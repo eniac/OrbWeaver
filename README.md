@@ -13,19 +13,21 @@ The repo provides the corresponding implementation in both p4v14 and p4v16.
 
 ### How to Run
 
+Point `SDE` to the SDE root dir, e.g., `echo "export SDE=/home/leoyu/bf-sde-9.2.0/" >> ~/.bashrc`
+
 **p4v14**
 
 1. Compile the example P4 program (or OrbWeaver with custom target data plane app):
 
 ```console
-leoyu@localhost:~/OrbWeaver/p4v14/dp$ sudo ./compile.sh orbweaver.p4
+leoyu@localhost:~/OrbWeaver/p4v14/dp$ sudo -E ./compile.sh orbweaver.p4
 ```
 
 2. Launch the switch daemon process to configure the seed generation, queues and buffers:
 
 ```console
 # Usage: ./launch.sh [-t ethertype_seed] [-g gap_seed] [-p prot_seed] <p4prog_name>
-leoyu@localhost:~/OrbWeaver/p4v14/cp$ sudo ./launch.sh -t 0x1234 -g 59 -p 0x11 orbweaver
+leoyu@localhost:~/OrbWeaver/p4v14/cp$ sudo -E ./launch.sh -t 0x1234 -g 59 -p 0x11 orbweaver
 ```
 
 3. Enable ports, create multicast groups, and configure data plane states: `python orbweaver.py`
@@ -39,6 +41,7 @@ leoyu@localhost:~/OrbWeaver/p4v14/cp$ sudo ./launch.sh -t 0x1234 -g 59 -p 0x11 o
 
 
 **p4v16[TBA]**
+
 
 ### Further Questions
 

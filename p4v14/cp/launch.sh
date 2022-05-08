@@ -1,6 +1,10 @@
 #! /bin/bash
 
-export SDE=/home/leoyu/bf-sde-9.2.0
+if [ -z $SDE ]; then
+  echo "ERROR: SDE env var not set"
+  exit 1
+fi
+
 set -e
 
 ethertype_seed=0x1234
@@ -41,10 +45,10 @@ EOF
 PROG=orbweaver
 
 sudo rm ${PROG} || echo "$PROG Not Found"
-gcc -I${SDE}/install/include/ -Wno-implicit-function-declaration -Wno-missing-field-initializers -g -O2 -std=c99 -L${SDE}/install/lib/ -o ${PROG} ${PROG}.c -ldriver -lbfsys -lbfutils -lbf_switchd_lib -lm -ldl -lpthread -lpython3.4m -lavago
+gcc -I${SDE}install/include/ -Wno-implicit-function-declaration -Wno-missing-field-initializers -g -O2 -std=c99 -L${SDE}install/lib/ -o ${PROG} ${PROG}.c -ldriver -lbfsys -lbfutils -lbf_switchd_lib -lm -ldl -lpthread -lpython3.4m -lavago
 
-export SDE_INSTALL=$SDE"/install"
-export LD_LIBRARY_PATH=${SDE}/install/lib:$LD_LIBRARY_PATH
+export SDE_INSTALL=$SDE"install"
+export LD_LIBRARY_PATH=${SDE}install/lib:$LD_LIBRARY_PATH
 echo "LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
 
 OPT=""
