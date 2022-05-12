@@ -143,9 +143,11 @@ control ingress {
   ci_accounting_();
 
   apply(ti_set_pkt_type);
-  
+
+  // Upstream weaved stream processing
+
   if(ow_md.type == USER_TYPE) {
-    // Arbitrary user packet forwarding logic
+    // Arbitrary user packet processing logic
     apply(ti_forward_user);
   } else if(ow_md.type == EXTERNAL_IDLE_TYPE) {
     // Arbitrary processing of IDLE packets from upstream weaved stream
@@ -158,6 +160,7 @@ control ingress {
   apply(ti_filter);
   
   if(ow_md.type == LOCAL_IDLE_TYPE) {
+    // SEED stream processing
     apply(ti_mc_seed);
     if(hi_md_.record_ == 0x1) {
       apply(ti_mcgid2ctr_);
@@ -168,6 +171,6 @@ control ingress {
 control egress {
   ce_accounting_();
   if (ow_md.type == LOCAL_IDLE_TYPE) {
-    // Arbitrary IDLE packet processing
+    // Arbitrary IDLE packet processing for downstream weaved stream
   }
 }

@@ -254,15 +254,6 @@ control Ingress(
 
     Ci_accounting_() ci_accounting_; 
 
-    // my_ingress_function() ingr_f;
-    bit<32> a = hdr.ipv4.src_addr;
-    bit<32> b = hdr.ipv4.dst_addr;
-    bit<32> c = 0;
-
-    /* Basic L2 forwarding */
-    action aiOut(bit<9> out_port) {
-        ig_tm_md.ucast_egress_port = out_port;
-    }
     action ai_drop() {
         ig_dprsr_md.drop_ctl = 0x1;
     }
@@ -373,28 +364,13 @@ control Ingress(
 	const default_action = ai_mcgid2ctr_();
     }
 
-
-    //table tiWire {
-    //    key = {
-    //        ig_intr_md.ingress_port : exact;
-    //    }
-    //    const default_action = aiDrop();
-    //if (computed_var == 0x3030303) {
-    //    aiReflect();
-    //} else {
-    //    tiWire.apply();            
-   //}
-
     apply {
-        // c = a + b
-        // ingr_f.apply(a, b, c); 
-        // reflect if c == 0x3030303
-        // (so src addr == 1.1.1.1, 
-        // dst addr == 2.2.2.2
-        // should reflect)
         ci_accounting_.apply(ig_dprsr_md, ig_intr_md, ig_tm_md, md, 0x0);
 
         ti_set_pkt_type.apply();
+
+        // Process information from upstream weaved streams
+
 	if(md.ow_md.type == USER_TYPE) {
             // Arbitrary user packet forwarding logic
 	    ti_forward_user.apply();
@@ -409,6 +385,7 @@ control Ingress(
 	ti_filter.apply();
         
 	if(md.ow_md.type == LOCAL_IDLE_TYPE) {
+	    // Transform SEED to IDLE
             ti_mc_seed.apply();
 	    if(md.hi_md_.record_ == 0x1) {
 	        ti_mcgid2ctr_.apply();

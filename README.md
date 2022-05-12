@@ -2,7 +2,11 @@
 
 ### Description
 
-OrbWeaver is a lightweight mechanism to provide weaved stream abstraction, enabling opportunistic exploitation of IDLE cycles for in-network communication.
+OrbWeaver is a lightweight mechanism to provide weaved stream abstraction, enabling opportunistic exploitation of IDLE cycles for in-network communication. The figure below illustrates the generic structure of a switch program that processes a weaved stream. An application can leverage either seed packets in the data path or switch CPU to disseminate information across local pipelines.
+
+<p align="center">
+  <img src="./orbweaver_usage.png" alt="Structure of Applications Atop Weaved Stream"/>
+</p>
 
 The repo contains an example OrbWeaver mechanism inline with a minimal p4 user program for a tofino pipeline with fully connected 100G quads, so that one could adapt the scripts based on the custom wiring, number of utilized pipelines and ports, and the target data plane application.
 Metadata, actions, tables, and control blocks with `*_` suffix are for debugging purposes only.
