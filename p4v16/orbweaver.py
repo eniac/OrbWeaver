@@ -172,6 +172,8 @@ def debug(log_time, log_dir):
   print("PID: " + str(os.getpid()))
   m = Manager(p4name="main")
 
+  create_dir(log_dir)
+
   print("--- Trigger debug modules to record for {} ---".format(args.time))                            
   m.set_default_rule_action_arg("ti_set_record_", "ai_set_record_", "flag", 1)
   m.set_default_rule_action_arg("te_set_record_", "ae_set_record_", "flag", 1)
@@ -186,10 +188,14 @@ def debug(log_time, log_dir):
       print(port, value)
 
   print("pipe0&1 re_port2ctr_")
+  port2ctr = {}
   for port in range(256):
     value = m.read_reg_element_for_pipe("re_port2ctr_", port, pipeid=port_to_pipe(port))
     if value != 0:
       print(port, value)
+      port2ctr[port] = value
+  with open(log_dir+"/re_port2ctr.json", "w") as f:
+    json.dump(port2ctr, f, indent=4, sort_keys=True)
 
   print("pipe0 ri_mcgid2ctr_")
   for index in range(2048):
@@ -240,16 +246,16 @@ def debug(log_time, log_dir):
       if index in gap2count.keys():
         print("{0}[ns], {1}, {2}%".format(index, gap2count[index], 1.0*gap2count[index]/sum_count*100.0))
     print("Mean gap: {0}".format(1.0*sum_gap/sum_count))
+  with open(log_dir+"/re_gap_hist.json", "w") as f:
+    json.dump(gap2count, f, indent=4, sort_keys=True)
 
   seq2gap = {}
   for seq in range(131072):
     gap = long(m.read_reg_element_for_pipe("re_gap_rb_", seq, pipeid=0))
     if gap != 0:
       seq2gap[seq] = gap 
-  
-  create_dir(log_dir)
-  with open(log_dir+"/gap_rb_pipe0.json", "w") as f:
-    json.dump(seq2gap, f)
+  with open(log_dir+"/re_gap_rb_pipe0.json", "w") as f:
+    json.dump(seq2gap, f, indent=4, sort_keys=True)
 
   m.disconnect()
 

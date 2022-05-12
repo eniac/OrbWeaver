@@ -2,3 +2,4 @@ zlog-cfg-cur
 orbweaver
 *.log*
 *.pyc
+logs

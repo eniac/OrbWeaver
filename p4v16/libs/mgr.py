@@ -239,12 +239,11 @@ def set_port_or_lag_bitmap(bit_map_size, indicies):
     index = port_to_bit_idx(i)
     bit_map[index/8] = (bit_map[index/8] | (1 << (index%8))) & 0xFF
   return bytes_to_string(bit_map)
-import os
+
 def create_dir(name):
-  try:
-    os.makedirs(name)
-  except OSError as e:
-    if e.errno == errno.EEXIST:
-      pass
-    else:
-      raise
+  if not os.path.exists(name):
+    os.mkdir(name)
+    print("mkdir {}".format(name))
+  else:
+    print("{} exists".format(name))
+

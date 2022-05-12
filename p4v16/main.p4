@@ -99,7 +99,44 @@ parser TofinoIngressParser(
     }
 }
 
-parser EthIpParser(packet_in pkt, out header_t hdr, out metadata_t md){
+parser EthIpIngressParser(packet_in pkt, 
+                   inout ingress_intrinsic_metadata_t ig_intr_md,
+                   out header_t hdr,
+		   out metadata_t md){
+
+    ParserPriority() parser_prio;
+    
+    state start {
+        transition select(ig_intr_md.ingress_port) {
+	    68 : parse_seed;
+	    default: parse_ethernet;
+	}
+    }
+    state parse_seed {
+        parser_prio.set(7);  // High prio
+        pkt.extract(hdr.ethernet);
+        transition select(hdr.ethernet.ether_type) {
+            ETHERTYPE_IPV4 : parse_ip;
+            default : accept;
+        }
+    }
+    state parse_ethernet {
+        pkt.extract(hdr.ethernet);
+        transition select(hdr.ethernet.ether_type) {
+            ETHERTYPE_IPV4 : parse_ip;
+            default : accept;
+        }
+    }
+    state parse_ip {
+        pkt.extract(hdr.ipv4);
+        transition accept;
+    }
+}
+
+parser EthIpEgressParser(packet_in pkt, 
+                   out header_t hdr,
+		   out metadata_t md){
+
     state start {
         pkt.extract(hdr.ethernet);
         transition select(hdr.ethernet.ether_type) {
@@ -133,7 +170,7 @@ parser IngressParser(
 {
     state start {
         TofinoIngressParser.apply(pkt, ig_intr_md, hdr, md);
-        EthIpParser.apply(pkt, hdr, md);
+        EthIpIngressParser.apply(pkt, ig_intr_md, hdr, md);
         transition accept;
     }
 }
@@ -369,16 +406,16 @@ control Ingress(
 
         ti_set_pkt_type.apply();
 
-        // Process information from upstream weaved streams
+        // Custom upstream weaved stream processing
 
 	if(md.ow_md.type == USER_TYPE) {
-            // Arbitrary user packet forwarding logic
+            // Custom user packet forwarding logic
 	    ti_forward_user.apply();
 	} else if(md.ow_md.type == EXTERNAL_IDLE_TYPE) {
-            // Arbitrary processing of IDLE packets from upstream weaved stream
+            // Custom processing of upstream IDLE packets
 	    ti_process_upstream_idle.apply();
 	} else if(md.ow_md.type == LOCAL_IDLE_TYPE) {
-	    // Arbitrary seed packet processing
+	    // Custom seed packet processing
 	}
 
 	ti_set_mask.apply();
@@ -413,7 +450,7 @@ parser EgressParser(
         out metadata_t eg_md,
         out egress_intrinsic_metadata_t eg_intr_md) {
     TofinoEgressParser() tofino_parser;
-    EthIpParser() eth_ip_parser; 
+    EthIpEgressParser() eth_ip_parser; 
     state start {
         tofino_parser.apply(pkt, eg_intr_md);
         transition parse_packet;
@@ -551,7 +588,7 @@ control Egress(
     apply { 
         ce_accounting_.apply(hdr, eg_md, eg_intr_md, eg_prsr_md, eg_dprsr_md, eg_oport_md);
 	if (eg_md.ow_md.type == LOCAL_IDLE_TYPE) {
-            // Arbitrary IDLE packet processing	
+            // Custom IDLE packet processing	
 	}
     }
 }

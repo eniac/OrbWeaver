@@ -171,6 +171,6 @@ control ingress {
 control egress {
   ce_accounting_();
   if (ow_md.type == LOCAL_IDLE_TYPE) {
-    // Arbitrary IDLE packet processing for downstream weaved stream
+    // Arbitrary downstream IDLE packet processing
   }
 }
