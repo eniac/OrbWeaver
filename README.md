@@ -23,7 +23,7 @@ Point `SDE` to the SDE root dir, e.g., `echo "export SDE=/home/leoyu/bf-sde-9.2.
 leoyu@localhost:~/OrbWeaver/p4v14/dp$ sudo -E ./compile.sh orbweaver.p4
 ```
 
-2. Launch the switch daemon process to configure the seed generation, queues and buffers:
+2. Launch the switch daemon process to configure the seed generation, queues, and buffers:
 
 ```console
 # Usage: ./launch.sh [-t ethertype_seed] [-g gap_seed] [-p prot_seed] <p4prog_name>
@@ -39,9 +39,17 @@ leoyu@localhost:~/OrbWeaver/p4v14/cp$ sudo -E ./launch.sh -t 0x1234 -g 59 -p 0x1
     * Histogram of weaved stream gap [ns] for an egress port
     * Ring buffer of gaps [ns] for a substream of an egressing weaved stream
 
+**p4v16**
 
-**p4v16[TBA]**
+1. Install SDE with proper prerequisites: `python make.py sde -r /home/leoyu/bf-sde-9.2.0/ -b /home/leoyu/bf-reference-bsp-9.2.0/ -t hw`
 
+2. Compile orbweaver program in p4-16: `python make.py compile main.p4 /home/leoyu/OrbWeaver/p4v16/out`
+
+3. Run switchd with OrbWeaver configuration: `python make.py switchd /home/leoyu/OrbWeaver/p4v16/main.cpp /home/leoyu/OrbWeaver/p4v16/out/ -t 0x1234 -g 59 -p 0x11`
+
+4. Enable ports, configure PRE, set data plane states: `python orbweaver.py`
+
+5. Sanity check: `python orbweaver.py debug`
 
 ### Further Questions
 
