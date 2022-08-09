@@ -114,7 +114,6 @@ void init_pktgen(int pipe_id, int app_id, int pkt_offset, int timer_ns, int batc
   prob_app_cfg.ibg_jitter = 0;
   prob_app_cfg.ipg = 0;
   prob_app_cfg.ipg_jitter = 0;
-  prob_app_cfg.source_port = PKTGEN_SRC_PORT_PIPE0+128*pipe_id;
   prob_app_cfg.increment_source_port = 0;
 
   prob_app_cfg.pkt_buffer_offset = pkt_offset;
